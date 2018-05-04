@@ -1,0 +1,16 @@
+*.gz
+*.npz
+*.pyc
+*~
+.DS_Store
+.idea
+.vscode
+data/
+checkpoint/
+samples/
+build/
+dist
+docs/_build
+__pycache__/
+tensorlayer.egg-info
+tensorlayer/__pycache__
