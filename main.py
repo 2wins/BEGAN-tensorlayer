@@ -26,7 +26,7 @@ flags.DEFINE_float("train_size", np.inf, "The size of train images [np.inf]")
 flags.DEFINE_integer("batch_size", 64, "The number of batch images [64]")
 flags.DEFINE_integer("image_size", 108, "The size of image to use (will be center cropped) [108]")
 flags.DEFINE_integer("output_size", 64, "The size of the output images to produce [64]")
-flags.DEFINE_integer("sample_size", 16, "The number of sample images [16]")
+flags.DEFINE_integer("sample_size", 25, "The number of sample images [25]")
 flags.DEFINE_integer("c_dim", 3, "Dimension of image color. [3]")
 flags.DEFINE_integer("z_dim", 64, "Dimension of seed vector [64]")
 flags.DEFINE_float("kt", 0.0, "Parameter kt [0.0]")
@@ -52,7 +52,7 @@ def main(_):
 
     kt_np = np.float32(FLAGS.kt)
     lr_np = np.float32(FLAGS.learning_rate)
-    with tf.device("/gpu:0"):
+    with tf.device("/gpu:{}".format(FLAGS.gpu_num)):
         ##========================= DEFINE MODEL ===========================##
         z = tf.placeholder(tf.float32, [FLAGS.batch_size, FLAGS.z_dim], name='z_noise')
 
@@ -107,10 +107,12 @@ def main(_):
     save_dir = os.path.join(FLAGS.checkpoint_dir, model_dir)
     tl.files.exists_or_mkdir(FLAGS.sample_dir)
     tl.files.exists_or_mkdir(save_dir)
+
     # load the latest checkpoints
     net_g_name = os.path.join(save_dir, 'net_g.npz')
     net_d_name = os.path.join(save_dir, 'net_d.npz')
 
+    # load the list of image files
     data_files = glob(os.path.join(FLAGS.data_dir, FLAGS.dataset, "*.jpg"))
 
     sample_seed = np.random.uniform(-1, 1, size=(FLAGS.sample_size, FLAGS.z_dim)).astype(np.float32)
@@ -118,7 +120,6 @@ def main(_):
     ##========================= TRAIN MODELS ================================##
     iter_counter = 0
     for epoch in range(FLAGS.epoch):
-
         # shuffle data
         shuffle(data_files)
 
@@ -140,7 +141,7 @@ def main(_):
             batch_z = np.random.uniform(-1, 1, size=(FLAGS.batch_size, FLAGS.z_dim)).astype(np.float32)
             start_time = time.time()
 
-            # updates the networks
+            # update the networks
             feed_dict = {z: batch_z, real_images: batch_images, kt: kt_np, lr: lr_np}
             errG, _ = sess.run([g_loss, g_optim], feed_dict=feed_dict)
             errD, _ = sess.run([d_loss, d_optim], feed_dict=feed_dict)
@@ -149,6 +150,7 @@ def main(_):
             print("Epoch: [%2d/%2d] [%4d/%4d] time: %4.4f, d_loss: %.8f, g_loss: %.8f, m_global: %.8f"
                   % (epoch, FLAGS.epoch, idx, batch_idxs, time.time() - start_time, errD, errG, errM))
 
+            # update the parameter kt
             kt_np = np.maximum(np.minimum(1., kt_np + FLAGS.lamda * (FLAGS.gamma * dlr - dlf)), 0.)
 
             iter_counter += 1
@@ -165,7 +167,7 @@ def main(_):
                 tl.files.save_npz(net_d.all_params, name=net_d_name, sess=sess)
                 print("[*] Saving checkpoints SUCCESS!")
 
-        # Update learning rate
+        # update learning rate
         lr_np *= 0.95
 
 
