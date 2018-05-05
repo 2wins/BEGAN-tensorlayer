@@ -20,4 +20,7 @@ Second, train the GAN:
     $ python main.py
 
 ## Result on CelebA
-(To be uploaded)
+From scratch to 60k (frames captured every 500 iter.)
+<p>
+<img src="img/training.gif"/>
+</p>
