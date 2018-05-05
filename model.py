@@ -11,7 +11,7 @@ def generator_api(inputs, is_train=True, reuse=False):
     s2, s4, s8, s16 = int(image_size / 2), int(image_size / 4), \
                       int(image_size / 8), int(image_size / 16)
 
-    gf_dim = 64  # Dimension of gen filters in first conv layer. [64]
+    gf_dim = 64  # Dimension of generator filters in first conv layer. [64]
     c_dim = FLAGS.c_dim  # n_color 3
     w_init = tf.random_normal_initializer(stddev=0.02)
     gamma_init = tf.random_normal_initializer(1., 0.02)
@@ -55,7 +55,7 @@ def generator_api(inputs, is_train=True, reuse=False):
         net_h5 = Conv2d(net_h5, gf_dim, (3, 3), (1, 1), act=tf.nn.elu,
                         padding='SAME', W_init=w_init, name='g/h5/conv2d_b')
 
-        net_h6 = Conv2d(net_h5, c_dim, (3, 3), (1, 1), act=tf.identity,
+        net_h6 = Conv2d(net_h5, c_dim, (3, 3), (1, 1), act=tf.nn.tanh,
                         padding='SAME', W_init=w_init, name='g/h6/conv2d')
 
     return net_h6
@@ -63,7 +63,7 @@ def generator_api(inputs, is_train=True, reuse=False):
 
 def encoder_api(inputs, is_train=True, reuse=False):
     image_size = FLAGS.output_size
-    df_dim = 64  # Dimension of discrim filters in first conv layer. [64]
+    df_dim = 64  # Dimension of encoder filters in first conv layer. [64]
     z_dim = FLAGS.z_dim
     w_init = tf.random_normal_initializer(stddev=0.02)
     gamma_init = tf.random_normal_initializer(1., 0.02)
@@ -116,7 +116,7 @@ def decoder_api(inputs, is_train=True, reuse=False):
     image_size = FLAGS.output_size
     s2, s4, s8, s16 = int(image_size / 2), int(image_size / 4), \
                       int(image_size / 8), int(image_size / 16)
-    df_dim = 64  # Dimension of gen filters in first conv layer. [64]
+    df_dim = 64  # Dimension of decoder filters in first conv layer. [64]
     c_dim = FLAGS.c_dim  # n_color 3
     batch_size = FLAGS.batch_size  # 64
     w_init = tf.random_normal_initializer(stddev=0.02)
@@ -161,7 +161,7 @@ def decoder_api(inputs, is_train=True, reuse=False):
         net_h5 = Conv2d(net_h5, df_dim, (3, 3), (1, 1), act=tf.nn.elu,
                         padding='SAME', W_init=w_init, name='dec/h5/conv2d_b')
 
-        net_h6 = Conv2d(net_h5, c_dim, (3, 3), (1, 1), act=tf.identity,
+        net_h6 = Conv2d(net_h5, c_dim, (3, 3), (1, 1), act=tf.nn.tanh,
                         padding='SAME', W_init=w_init, name='dec/h6/conv2d')
 
     return net_h6
