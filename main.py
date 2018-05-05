@@ -4,7 +4,6 @@ import time
 import numpy as np
 import tensorflow as tf
 import tensorlayer as tl
-from tensorlayer.layers import *
 from glob import glob
 from random import shuffle
 from model import *
@@ -38,9 +37,8 @@ flags.DEFINE_string("dataset", "celebA", "The name of dataset [celebA, mnist, ls
 flags.DEFINE_string("checkpoint_dir", "checkpoint", "Directory name to save the checkpoints [checkpoint]")
 flags.DEFINE_string("sample_dir", "samples", "Directory name to save the image samples [samples]")
 flags.DEFINE_string("data_dir", "data", "Directory name to contain the dataset [data]")
-flags.DEFINE_boolean("is_train", True, "True for training, False for testing [False]")
-flags.DEFINE_boolean("is_crop", True, "True for training, False for testing [False]")
-flags.DEFINE_boolean("visualize", False, "True for visualizing, False for nothing [False]")
+flags.DEFINE_boolean("is_train", True, "True for training, False for testing [True]")
+flags.DEFINE_boolean("is_crop", True, "True for training, False for testing [True]")
 FLAGS = flags.FLAGS
 
 
@@ -103,7 +101,7 @@ def main(_):
     sess = tf.InteractiveSession()
     tl.layers.initialize_global_variables(sess)
 
-    model_dir = "%s_%s_%s" % (FLAGS.dataset, FLAGS.batch_size, FLAGS.output_size)
+    model_dir = "%s_%s" % (FLAGS.dataset, FLAGS.output_size)
     save_dir = os.path.join(FLAGS.checkpoint_dir, model_dir)
     tl.files.exists_or_mkdir(FLAGS.sample_dir)
     tl.files.exists_or_mkdir(save_dir)
