@@ -48,6 +48,7 @@ def main(_):
         for i in range(FLAGS.num_imgs):
             sample_seed = np.random.uniform(-1, 1, size=(1, FLAGS.z_dim)).astype(np.float32)
             img = sess.run(net_g.outputs, feed_dict={z: sample_seed})
+            img = np.round((img + 1) * 127.5).astype(np.uint8)
             tl.visualize.save_image(img[0, :], os.path.join(FLAGS.save_dir, '{:06d}.png'.format(i)))
 
 if __name__ == '__main__':
