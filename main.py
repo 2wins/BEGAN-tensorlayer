@@ -23,7 +23,8 @@ flags.DEFINE_float("learning_rate", 0.0001, "Learning rate of adam [0.0001]")
 flags.DEFINE_float("beta1", 0.5, "Momentum term of adam [0.5]")
 flags.DEFINE_float("train_size", np.inf, "The size of train images [np.inf]")
 flags.DEFINE_integer("batch_size", 64, "The number of batch images [64]")
-flags.DEFINE_integer("image_size", 108, "The size of image to use (will be center cropped) [108]")
+flags.DEFINE_string("point", None, "The starting point (x, y) of cropped region [None]")
+flags.DEFINE_integer("image_size", 128, "The size of image to use (will be cropped) [128]")
 flags.DEFINE_integer("output_size", 64, "The size of the output images to produce [64]")
 flags.DEFINE_integer("sample_size", 25, "The number of sample images [25]")
 flags.DEFINE_integer("c_dim", 3, "Dimension of image color. [3]")
@@ -32,7 +33,7 @@ flags.DEFINE_float("kt", 0.0, "Parameter kt [0.0]")
 flags.DEFINE_float("gamma", 0.5, "Parameter gamma [0.5]")
 flags.DEFINE_float("lamda", 0.001, "Parameter lambda [0.001]")
 flags.DEFINE_integer("sample_step", 500, "The interval of generating sample. [500]")
-flags.DEFINE_integer("save_step", 500, "The interval of saveing checkpoints. [500]")
+flags.DEFINE_integer("save_step", 500, "The interval of saving checkpoints. [500]")
 flags.DEFINE_string("dataset", "celebA", "The name of dataset [celebA, mnist, lsun]")
 flags.DEFINE_string("checkpoint_dir", "checkpoint", "Directory name to save the checkpoints [checkpoint]")
 flags.DEFINE_string("sample_dir", "samples", "Directory name to save the image samples [samples]")
@@ -50,6 +51,12 @@ def main(_):
 
     kt_np = np.float32(FLAGS.kt)
     lr_np = np.float32(FLAGS.learning_rate)
+    if FLAGS.point is None:
+        point = None
+    else:
+        point = [int(x) for x in FLAGS.point.split()]
+        assert len(point) == 2, "invalid starting point \"{}\" for cropping.".format(FLAGS.point)
+
     with tf.device("/gpu:{}".format(FLAGS.gpu_num)):
         ##========================= DEFINE MODEL ===========================##
         z = tf.placeholder(tf.float32, [FLAGS.batch_size, FLAGS.z_dim], name='z_noise')
@@ -134,7 +141,7 @@ def main(_):
             batch_files = data_files[idx * FLAGS.batch_size:(idx + 1) * FLAGS.batch_size]
             # get real images
             # more image augmentation functions in http://tensorlayer.readthedocs.io/en/latest/modules/prepro.html
-            batch = [get_image(batch_file, FLAGS.image_size, is_crop=FLAGS.is_crop, resize_w=FLAGS.output_size, is_grayscale=0) for batch_file in batch_files]
+            batch = [get_image(batch_file, FLAGS.image_size, point=point, is_crop=FLAGS.is_crop, resize_w=FLAGS.output_size, is_grayscale=0) for batch_file in batch_files]
             batch_images = np.array(batch).astype(np.float32)
             batch_z = np.random.uniform(-1, 1, size=(FLAGS.batch_size, FLAGS.z_dim)).astype(np.float32)
             start_time = time.time()
@@ -156,7 +163,7 @@ def main(_):
                 # generate and visualize generated images
                 img = sess.run(net_gs.outputs, feed_dict={z_s: sample_seed})
                 img = np.round((img + 1) * 127.5).astype(np.uint8)
-                tl.visualize.save_images(img, [4, 4], './{}/train_{:06d}.png'.format(FLAGS.sample_dir, iter_counter))
+                tl.visualize.save_images(img, [5, 5], './{}/train_{:06d}.png'.format(FLAGS.sample_dir, iter_counter))
 
             if np.mod(iter_counter, FLAGS.save_step) == 0:
                 # save current network parameters
