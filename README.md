@@ -26,6 +26,8 @@ Third, generate faces with the trained generator:
 
 ## Result on CelebA
 From scratch to 60k (frames captured every 500 iter.)
+
+`gamma=0.5`
 <p>
 <img src="img/training.gif"/>
 </p>
