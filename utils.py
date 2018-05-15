@@ -23,7 +23,7 @@ def specific_crop(x, point, crop_h, crop_w=None, resize_w=64):
     assert i+crop_w < w and j+crop_h < h, "invalid crop_h (and/or crop_w) or starting point."
     return resize(x[j:j+crop_h, i:i+crop_w], [resize_w, resize_w])
 
-    
+
 def transform(image, npx=64, point=None, is_crop=True, resize_w=64):
     if is_crop:
         if point is None:
@@ -31,7 +31,7 @@ def transform(image, npx=64, point=None, is_crop=True, resize_w=64):
         else:
             cropped_image = specific_crop(image, point, npx, resize_w=resize_w)
     else:
-        cropped_image = image
+        cropped_image = image if npx==resize_w else resize(image, [resize_w, resize_w])
     return np.array(cropped_image)/127.5 - 1.
 
 

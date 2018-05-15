@@ -13,8 +13,7 @@ flags.DEFINE_integer("output_size", 64, "The size of the output images to produc
 flags.DEFINE_integer("num_imgs", 100, "The number of generated images. [100]")
 flags.DEFINE_integer("c_dim", 3, "Dimension of image color. [3]")
 flags.DEFINE_integer("z_dim", 64, "Dimension of seed vector [64]")
-flags.DEFINE_string("dataset", "celebA", "The name of dataset [celebA, mnist, lsun]")
-flags.DEFINE_string("checkpoint_dir", "checkpoint", "Directory name to save the checkpoints [checkpoint]")
+flags.DEFINE_string("load_dir", "checkpoint/celebA", "Directory name to load the checkpoints [checkpoint/celebA]")
 flags.DEFINE_string("save_dir", "result", "Directory name to save the images [result]")
 FLAGS = flags.FLAGS
 
@@ -34,8 +33,7 @@ def main(_):
     sess = tf.InteractiveSession()
     tl.layers.initialize_global_variables(sess)
 
-    model_dir = "%s_%s" % (FLAGS.dataset, FLAGS.output_size)
-    load_dir = os.path.join(FLAGS.checkpoint_dir, model_dir)
+    load_dir = FLAGS.load_dir
     tl.files.exists_or_mkdir(FLAGS.save_dir)
 
     # load the latest checkpoint
